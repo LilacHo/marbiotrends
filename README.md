@@ -4,7 +4,7 @@ https://mc-stan.org/cmdstanr/articles/cmdstanr.html
 
 Stan files are located in the stan folder
 
-# Model (MARSS a Bayesian framework)
+# Model (MARSS in a Bayesian framework)
 ## Why state-space?
 SSMs differentiate process and observation error, which allows estimation of unobserved states while simultaneously accounting for sampling uncertainty. In the context of population dynamics, process error refers to true changes in abundance due to birth, deaths, immigration, emigrations, while observation error refers to randomness in surveys sampling abundance. This separation of process and observation error may reduce spurious interpretations of extinction risk, which should be based only on process variability
 

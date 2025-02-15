@@ -17,7 +17,7 @@ The priors in the Stan examples are based on pinnipeds, so they will likely need
 ## Framework
 The MARSS models were originally designed to be ran at the species level, simulatneously estimating all conspecific populations (multivariate). This can be modified to higher taxonomic levels if you so wish. Model run times will exponentially increase with # of time series in the MARSS.
 
-## Why not just fit a smoother like a GAM over each time series?/
+## Why not just fit a smoother like a GAM over each time series?
 MARSS essentially does this, but the cool thing is squeezing as much information from the data as possible. Information meaning process and error parameters. We can also explore more hypotheses about different observation params by each survey method, or different process params by subspecies, or covariance of process changes based on spatial distance... which are all beyond the scope of this class.
 
 # Script 

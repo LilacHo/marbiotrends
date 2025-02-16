@@ -11,6 +11,8 @@ SSMs differentiate process and observation error, which allows estimation of uno
 An in-depth description about the statistical underpinnings of the multivariate (multi-population) autoregressive state-space model:
 https://nwfsc-timeseries.github.io/MARSS-Manual/chap-marss.html
 
+It's currently set as a random walk of population abundances in log space under a diagonal and equal process and observation covariance matrix. B = 1, u = 0, C = 0, G = 1, D = 0, H = 1
+
 ### Why Bayesian? 
 Scarce ecological data, some parameters will be difficult to estimate in a likelihood framework. The priors in the Stan examples are based on pinnipeds, so they will likely need to change for your taxa.
 

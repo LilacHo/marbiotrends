@@ -26,10 +26,10 @@ bird_df_long = bird_df %>%
   mutate(log.spawner = log(Count+1)) %>%
   group_by(ID) %>%
   drop_na(Count) %>%
-  mutate(n=n()) %>% filter(n>5) 
+  mutate(n=n()) %>% filter(n>0) 
 
 # Example by filtering to Frigatebirds
-species_i = "Fregatidae"
+species_i = "Pelecanoididae"
 species_i_pre_df = bird_df_long %>% filter(Family == species_i) 
 
 #=== Massage data back to wide

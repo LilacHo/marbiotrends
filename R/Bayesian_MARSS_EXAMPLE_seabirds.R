@@ -132,9 +132,9 @@ loo_tmp = loo(fit2$draws("log_lik"))
 tot_sum_x = fit2$draws("tot_sum_x",format = "matrix")
 tot_sum = data.frame(tot.mean = apply(tot_sum_x, 2, mean),
                      tot.sd = apply(tot_sum_x, 2, sd),
-                     tot.q025 = apply(tot_sum_x,2,quantile, probs = c(0.025)),
+                     tot.q025 = apply(tot_sum_x,2,quantile, probs = c(0.25)),
                      tot.q50 = apply(tot_sum_x,2,quantile, probs = c(0.50)),
-                     tot.q975 = apply(tot_sum_x,2,quantile, probs = c(0.975)),
+                     tot.q975 = apply(tot_sum_x,2,quantile, probs = c(0.75)),
                      var="total_abundance_norm") %>%
   mutate(year = as.numeric(colnames(species_i_df)))
 
@@ -252,6 +252,6 @@ print(p)
 # plot total abundance in REAL space
 p = tot_sum %>% ggplot() + 
   geom_ribbon(aes(x=year,ymin = tot.q025, ymax = tot.q975), alpha=0.2) +
-  geom_line(aes(x=year,y=tot.mean)) +
+  geom_line(aes(x=year,y=tot.q50)) +
   theme_bw()
 print(p)

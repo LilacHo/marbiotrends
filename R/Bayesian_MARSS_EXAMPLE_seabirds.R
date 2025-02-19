@@ -49,7 +49,7 @@ species_i_df <- species_i_pre_df %>%
   t() # make time across the columns
 
 #=== Set up for Stan
-site_vec <- species_i_pre_df %>%  distinct(Site)%>% pull(Site) 
+# site_vec <- species_i_pre_df %>%  distinct(Site)%>% pull(Site)
 id_vec <- species_i_pre_df %>% ungroup() %>% distinct(ID,Indiv.pop.map) %>% pull(Indiv.pop.map) 
 
 # hypotheses on states and observation time series mapping

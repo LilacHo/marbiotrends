@@ -11,6 +11,7 @@ bird_df %>% group_by(Family) %>%
   summarise(n=n())
 
 # switch to long formate for massaging
+# You will have to change your dataframe's column names to match these
 bird_df_long = bird_df %>% 
   # filter(Use == "yes") %>%
   # mutate(CommonName = Common.Name, Site = Location.of.population, RMU = Subspecies) %>%
@@ -101,7 +102,7 @@ if (model_type == "Q_unconstrained") {cmd_file_name = "marss_Qunconstrained_cmd.
 
 
 #=== Run model
-file <- file.path(cmdstan_path(), "pinnipeds", cmd_file_name)
+file <- file.path(cmdstan_path(), "pinnipeds", cmd_file_name) #  THIS LINE SHOULD CHANGE TO YOUR CMDSTAN DIRECTORY
 mod <- cmdstan_model(file)
 fit2 <- mod$sample(
   data = data_list_tmp$data,

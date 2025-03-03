@@ -16,7 +16,8 @@ bird_df_long = bird_df %>%
   # filter(Use == "yes") %>%
   # mutate(CommonName = Common.Name, Site = Location.of.population, RMU = Subspecies) %>%
   mutate(Indiv.pop.map = Site) %>% 
-  mutate(ts_id = paste(CommonName,"#",Site)) %>% 
+  ungroup() %>%
+  # mutate(ts_id = paste(CommonName,"#",Site)) %>% 
   pivot_longer(
     cols = starts_with("X"),
     names_to = "Year",
@@ -27,7 +28,23 @@ bird_df_long = bird_df %>%
   mutate(log.spawner = log(Count+1)) %>%
   group_by(ID) %>%
   drop_na(Count) %>%
-  mutate(n=n()) %>% filter(n>0) 
+  mutate(n=n()) %>% filter(n>0) %>% # filters out short time series
+  arrange(ID) %>%
+  group_by(Site,ID) %>%
+  # auto sets up which time series to add up at the end, 
+  # this below example is only including the largest populations of a site for an entire family, it doesnt make ecological sense but it's an example
+  mutate(med_Count = median(Count,na.rm=T)) %>%
+  group_by(Site,Family) %>%
+  mutate(add_up = case_when(med_Count==max(med_Count) ~ 1,
+                            .default= 0))
+
+# Necessary variables:
+# ID = Time series ID, multiple IDs is possible for a single "Indiv.pop.map" or "Site"
+# Indiv.pop.map = States that the time series belong to, akin to the Z matrix
+# [Taxa] = Species, Family, Genus; at the taxonomic resolution you want to run the MARSS
+# log.spawner = logged count data, model is in log space
+# year = year of the data 
+# add_up = select which time series you want to add up, generally only 1 time series per species-site has a "1", all others are "0"
 
 # Example by filtering to Frigatebirds
 species_i = "Pelecanoididae"
@@ -88,17 +105,18 @@ data_list_tmp <- setup_data(y = species_i_df,
                             family = "gaussian", 
                             # mcmc_list = mcmc_list,
                             marss = marss_list)
-
+data_list_tmp$data$add_up = species_i_pre_df %>% ungroup() %>% select(ID, add_up) %>% distinct() %>% pull(add_up)
 mcmc_list  = list(n_mcmc = 1000, n_burn = 300, n_chain = 3, n_thin = 1,step_size=0.4,adapt_delta=0.9)
 
 model_type = "Ueq"
 
+# Let's only do Base Model
 if (model_type == "Ueq") {cmd_file_name = "marss_cmd.stan"}
-if (model_type == "Gomp") {cmd_file_name = "marss_gomp_cmd.stan"}
-if (model_type == "MA1") {cmd_file_name = "marss_MA1_cmd.stan"}
-if (model_type == "GP") {cmd_file_name = "marss_gp_cmd_old.stan"}
-if (model_type == "GP_MA1") {cmd_file_name = "marss_gp_ma1_cmd_old.stan"}
-if (model_type == "Q_unconstrained") {cmd_file_name = "marss_Qunconstrained_cmd.stan"}
+# if (model_type == "Gomp") {cmd_file_name = "marss_gomp_cmd.stan"}
+# if (model_type == "MA1") {cmd_file_name = "marss_MA1_cmd.stan"}
+# if (model_type == "GP") {cmd_file_name = "marss_gp_cmd_old.stan"}
+# if (model_type == "GP_MA1") {cmd_file_name = "marss_gp_ma1_cmd_old.stan"}
+# if (model_type == "Q_unconstrained") {cmd_file_name = "marss_Qunconstrained_cmd.stan"}
 
 
 #=== Run model

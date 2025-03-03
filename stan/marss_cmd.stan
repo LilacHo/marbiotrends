@@ -2,6 +2,7 @@ data {
   int<lower=0> N; // number of years
   int<lower=0> M; // number of time series
   array [M]int<lower=0> states;
+  vector[M] add_up; // vector to add up for total abundance trend
   // int<lower=0> states[M]; // vector assigning time series to states
   int<lower=0> S; // number of states
   array [M]int<lower=0> obsVariances;  // observation variance map
@@ -176,5 +177,14 @@ generated quantities {
 //   // if(family==3) for (n in 1:n_pos) log_lik[n] = poisson_lpmf(y_int[n] | exp(pred[col_indx_pos[n], row_indx_pos[n]]));
 //   if(family==4) for (n in 1:n_pos) log_lik[n] = gamma_lpdf(y[n] | sigma_obs[obsVariances[row_indx_pos[n]]], sigma_obs[obsVariances[row_indx_pos[n]]] ./ exp(pred[col_indx_pos[n], row_indx_pos[n]]));
 //   if(family==5) for (n in 1:n_pos) log_lik[n] = lognormal_lpdf(y[n] | pred[col_indx_pos[n], row_indx_pos[n]], sigma_obs[obsVariances[row_indx_pos[n]]]);
-vector[N] tot_sum_x; for (n in 1:N) tot_sum_x[n] = sum(exp(x[n,])) ; 
+vector[N] tot_sum_x; 
+for (n in 1:N) tot_sum_x[n] = dot_product(exp(pred[n,]),add_up) ; 
+
+  // for(m in 1:M) {
+  //   for(t in 1:N) {
+  //     pred[t,m]*add_up[m]
+  //   }
+  // }
+  
+  
 }

@@ -28,15 +28,17 @@ bird_df_long = bird_df %>%
   mutate(log.spawner = log(Count+1)) %>%
   group_by(ID) %>%
   drop_na(Count) %>%
-  mutate(n=n()) %>% filter(n>0) %>% # filters out short time series
+  mutate(n=n()) %>% filter(n>1) %>% # filters out short time series
   arrange(ID) %>%
   group_by(Site,ID) %>%
+  mutate(add_up = 1)
   # auto sets up which time series to add up at the end, 
   # this below example is only including the largest populations of a site for an entire family, it doesnt make ecological sense but it's an example
-  mutate(med_Count = median(Count,na.rm=T)) %>%
-  group_by(Site,Family) %>%
-  mutate(add_up = case_when(med_Count==max(med_Count) ~ 1,
-                            .default= 0))
+  # mutate(med_Count = median(Count,na.rm=T)) %>%
+  # group_by(Site,Family) %>%
+  # mutate(add_up = case_when(med_Count==max(med_Count) ~ 1,
+  #                           .default= 0))
+
 
 # Necessary variables:
 # ID = Time series ID, multiple IDs is possible for a single "Indiv.pop.map" or "Site"
@@ -53,13 +55,13 @@ species_i_pre_df = bird_df_long %>% filter(Family == species_i)
 #=== Massage data back to wide
 species_i_df <- species_i_pre_df %>% 
   ungroup() %>% 
-  dplyr::select(ID,Year,Site, log.spawner) %>%  # get just the columns that I need
+  dplyr::select(CommonName,Year,Site, log.spawner) %>%  # get just the columns that I need
   # drop_na(log.spawner) %>%
-  group_by(ID,Site) %>% 
+  group_by(CommonName,Site) %>% 
   complete(Year = min(Year):max(Year),
            fill = list(log.spawner = NA)) %>%
   ungroup() %>%
-  pivot_wider(names_from = c("Site","ID"), values_from = "log.spawner") %>% 
+  pivot_wider(names_from = c("Site","CommonName"), values_from = "log.spawner") %>% 
   arrange(Year) %>% 
   column_to_rownames(var = "Year") %>% # make the years rownames
   # filter(if_any(everything(), ~ !is.na(.)))%>%
@@ -72,9 +74,12 @@ species_i_df <- species_i_pre_df %>%
 # there can be multiple time series for a single population/location
 # Indiv.pop.map is the population name
 id_vec <- species_i_pre_df %>% ungroup() %>% distinct(ID,Indiv.pop.map) %>% pull(Indiv.pop.map) 
+id_vec <- species_i_pre_df %>% ungroup() %>% distinct(CommonName,Indiv.pop.map) %>% 
+  mutate(state_vec = as.factor(row_number())) %>% pull(state_vec)
 
 # hypotheses on states and observation time series mapping
 n_states <- max(as.numeric(forcats::fct_inorder(id_vec))) # site_vec
+# n_states <- max(as.numeric((id_vec))) # site_vec
 r_unequal <- seq(1, nrow(species_i_df))
 r_equal <- rep(1, nrow(species_i_df))
 uq_unequal <- seq(1, n_states)
@@ -105,8 +110,8 @@ data_list_tmp <- setup_data(y = species_i_df,
                             family = "gaussian", 
                             # mcmc_list = mcmc_list,
                             marss = marss_list)
-data_list_tmp$data$add_up = species_i_pre_df %>% ungroup() %>% select(ID, add_up) %>% distinct() %>% pull(add_up)
-mcmc_list  = list(n_mcmc = 1000, n_burn = 300, n_chain = 3, n_thin = 1,step_size=0.4,adapt_delta=0.9)
+data_list_tmp$data$add_up = species_i_pre_df %>% ungroup() %>% select(Site,CommonName, add_up) %>% distinct() %>% pull(add_up)
+mcmc_list  = list(n_mcmc = 2500, n_burn = 1000, n_chain = 3, n_thin = 100,step_size=0.9,adapt_delta=0.8)
 
 model_type = "Ueq"
 
@@ -129,9 +134,10 @@ fit2 <- mod$sample(
   parallel_chains = mcmc_list$n_chain,
   iter_warmup = mcmc_list$n_burn,
   iter_sampling = mcmc_list$n_mcmc,
-  adapt_delta=0.97,
-  step_size=0.05,
-  refresh = 500 # print update every 500 iters
+  adapt_delta=0.8,
+  step_size=0.9,
+  thin = 2,
+  refresh = 100 # print update every 500 iters
 )
 
 preds = fit2$summary(variables = "pred")

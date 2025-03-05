@@ -143,6 +143,7 @@ fit2 <- mod$sample(
 preds = fit2$summary(variables = "pred")
 
 preds_matrix = cmdstanr_preds_sd(preds,species_i_df)
+# saveRDS(preds_matrix,"seabird_preds_matrix.RDS")
 
 # save model diags
 diag_summ = fit2$diagnostic_summary()
@@ -165,6 +166,7 @@ tot_sum = data.frame(tot.mean = apply(tot_sum_x, 2, mean),
                      tot.q975 = apply(tot_sum_x,2,quantile, probs = c(0.75)),
                      var="total_abundance_norm") %>%
   mutate(year = as.numeric(colnames(species_i_df)))
+# saveRDS(tot_sum,"tot_sum.RDS")
 
 # # LOOIC for model selection
 # loo_list_name = paste(species_i,model_type,sep="-")
@@ -282,5 +284,5 @@ p = tot_sum %>% ggplot() +
   geom_ribbon(aes(x=year,ymin = tot.q025, ymax = tot.q975), alpha=0.2) +
   geom_line(aes(x=year,y=tot.q50)) +
   theme_bw() + 
-  xlim(c(1960,2000)) + ylim(c(0,5e+8))
+  xlim(c(1950,2010)) + ylim(c(0,8e+8))
 print(p)

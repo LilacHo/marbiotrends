@@ -28,12 +28,12 @@ bird_df_long = bird_df %>%
   mutate(log.spawner = log(Count+1)) %>%
   group_by(ID) %>%
   drop_na(Count) %>%
-  mutate(n=n()) %>% filter(n>1) %>% # filters out short time series
+  mutate(n=n()) %>% filter(n>4) %>% # filters out short time series
   arrange(ID) %>%
-  group_by(Site,ID) %>%
-  mutate(add_up = 1)
-  # auto sets up which time series to add up at the end, 
+  mutate(add_up = 1) # this says add up all time series in the species abundance, this is bad if you have 2 time series for 1 population
+  # Below: auto sets up which time series to add up at the end, 
   # this below example is only including the largest populations of a site for an entire family, it doesnt make ecological sense but it's an example
+  # group_by(Site,ID) %>%
   # mutate(med_Count = median(Count,na.rm=T)) %>%
   # group_by(Site,Family) %>%
   # mutate(add_up = case_when(med_Count==max(med_Count) ~ 1,
@@ -50,7 +50,7 @@ bird_df_long = bird_df %>%
 
 # Example by filtering to Frigatebirds
 species_i = "Pelecanoididae"
-species_i_pre_df = bird_df_long %>% filter(Family == species_i) 
+species_i_pre_df = bird_df_long #%>% filter(Family == species_i) 
 
 #=== Massage data back to wide
 species_i_df <- species_i_pre_df %>% 
@@ -136,7 +136,7 @@ fit2 <- mod$sample(
   iter_sampling = mcmc_list$n_mcmc,
   adapt_delta=0.8,
   step_size=0.9,
-  thin = 2,
+  thin = 1,
   refresh = 100 # print update every 500 iters
 )
 
@@ -281,5 +281,6 @@ print(p)
 p = tot_sum %>% ggplot() + 
   geom_ribbon(aes(x=year,ymin = tot.q025, ymax = tot.q975), alpha=0.2) +
   geom_line(aes(x=year,y=tot.q50)) +
-  theme_bw()
+  theme_bw() + 
+  xlim(c(1960,2000)) + ylim(c(0,5e+8))
 print(p)
